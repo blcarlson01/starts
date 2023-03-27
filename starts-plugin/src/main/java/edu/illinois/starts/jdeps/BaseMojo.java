@@ -40,11 +40,18 @@ import org.apache.maven.surefire.util.DefaultScanResult;
  * Base MOJO for the JDeps-Based STARTS.
  */
 abstract class BaseMojo extends SurefirePlugin implements StartsConstants {
+    static final String STAR = "*";
     /**
      * Set this to "false" to not filter out "sun.*" and "java.*" classes from jdeps parsing.
      */
-    @Parameter(property = "filterLib", defaultValue = "false")
+    @Parameter(property = "filterLib", defaultValue = TRUE)
     protected boolean filterLib;
+
+    /**
+     * Set this to "false" to not add jdeps edges from 3rd party-libraries.
+     */
+    @Parameter(property = "useThirdParty", defaultValue = FALSE)
+    protected boolean useThirdParty;
 
     /**
      * The directory in which to store STARTS artifacts that are needed between runs.
@@ -70,7 +77,7 @@ abstract class BaseMojo extends SurefirePlugin implements StartsConstants {
      * Set this to "false" to not print the graph obtained from jdeps parsing.
      * When "true" the graph is written to file after the run.
      */
-    @Parameter(property = "printGraph", defaultValue = "true")
+    @Parameter(property = "printGraph", defaultValue = TRUE)
     protected boolean printGraph;
 
     /**
@@ -84,7 +91,6 @@ abstract class BaseMojo extends SurefirePlugin implements StartsConstants {
      */
     @Parameter(property = "startsLogging", defaultValue = "CONFIG")
     protected String loggingLevel;
-
     private Classpath sureFireClassPath;
 
     protected void printResult(Set<String> set, String title) {
@@ -215,16 +221,19 @@ abstract class BaseMojo extends SurefirePlugin implements StartsConstants {
         // library jars.
         File libraryFile = new File(jdepsCache, "jdk.graph");
         // Create the Loadables object early so we can use its helpers
-        Loadables loadables = new Loadables(classesToAnalyze, artifactsDir, sfPathString, filterLib, jdepsCache);
+        Loadables loadables = new Loadables(classesToAnalyze, artifactsDir, sfPathString,
+                useThirdParty, filterLib, jdepsCache);
         // Surefire Classpath object is easier to iterate over without de-constructing
         // sfPathString (which we use in a number of other places)
         loadables.setSurefireClasspath(sfClassPath);
 
-        List<String> moreEdges = new ArrayList<String>();
         long loadMoreEdges = System.currentTimeMillis();
         Cache cache = new Cache(jdepsCache, m2Repo);
         // 1. Load non-reflection edges from third-party libraries in the classpath
-        cache.loadM2EdgesFromCache(moreEdges, sfPathString);
+        List<String> moreEdges = new ArrayList<>();
+        if (useThirdParty) {
+            moreEdges = cache.loadM2EdgesFromCache(sfPathString);
+        }
         long loadM2EdgesFromCache = System.currentTimeMillis();
         // 2. Get non-reflection edges from CUT and SDK; use (1) to build graph
         loadables.create(new ArrayList<>(moreEdges), sfClassPath, computeUnreached);
@@ -255,8 +264,8 @@ abstract class BaseMojo extends SurefirePlugin implements StartsConstants {
     }
 
     protected List<String> getAllClasses() {
-        DirectoryScanner testScanner = new DirectoryScanner(getTestClassesDirectory(), new TestListResolver("*"));
-        DirectoryScanner classScanner = new DirectoryScanner(getClassesDirectory(), new TestListResolver("*"));
+        DirectoryScanner testScanner = new DirectoryScanner(getTestClassesDirectory(), new TestListResolver(STAR));
+        DirectoryScanner classScanner = new DirectoryScanner(getClassesDirectory(), new TestListResolver(STAR));
         DefaultScanResult scanResult = classScanner.scan().append(testScanner.scan());
         return scanResult.getFiles();
     }

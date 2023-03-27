@@ -1,5 +1,6 @@
 package edu.illinois.starts.maven;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -10,6 +11,7 @@ import edu.illinois.starts.constants.StartsConstants;
 /** This class is from Ekstazi. **/
 
 public final class SurefireMojoInterceptor extends AbstractMojoInterceptor implements StartsConstants {
+    static final String UNSUPPORTED_SUREFIRE_VERSION_EXCEPTION = "Unsupported surefire version. ";
 
     public static void execute(Object mojo) throws Exception {
         if (!isSurefirePlugin(mojo)) {
@@ -22,7 +24,7 @@ public final class SurefireMojoInterceptor extends AbstractMojoInterceptor imple
         try {
             updateExcludes(mojo);
         } catch (Exception ex) {
-            throwMojoExecutionException(mojo, "Unsupported surefire version", ex);
+            throwMojoExecutionException(mojo, UNSUPPORTED_SUREFIRE_VERSION_EXCEPTION, ex);
         }
     }
 
@@ -42,7 +44,7 @@ public final class SurefireMojoInterceptor extends AbstractMojoInterceptor imple
             getField(ARGLINE_FIELD, mojo);
             getField(EXCLUDES_FIELD, mojo);
         } catch (NoSuchMethodException ex) {
-            throwMojoExecutionException(mojo, "Unsupported surefire version. "
+            throwMojoExecutionException(mojo, UNSUPPORTED_SUREFIRE_VERSION_EXCEPTION
                      + "Try setting excludesFile in the surefire configuration.", ex);
         }
     }
@@ -50,8 +52,9 @@ public final class SurefireMojoInterceptor extends AbstractMojoInterceptor imple
     private static void updateExcludes(Object mojo) throws Exception {
         LOGGER.log(Level.FINE, "updating Excludes");
         List<String> currentExcludes = getListField(EXCLUDES_FIELD, mojo);
+        // always use forward-slash as separator for Surefire's excludes field
         List<String> newExcludes = new ArrayList<>(Arrays.asList(System.getProperty(STARTS_EXCLUDE_PROPERTY)
-                .replace("[", "").replace("]", "").split(",")));
+                .replace("[", EMPTY).replace("]", EMPTY).replace(File.separator, "/").split(COMMA)));
         if (currentExcludes != null) {
             newExcludes.addAll(currentExcludes);
         } else {

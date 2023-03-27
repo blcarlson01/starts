@@ -4,7 +4,7 @@
 
   <groupId>edu.illinois</groupId>
   <artifactId>starts</artifactId>
-  <version>1.4-SNAPSHOT</version>
+  <version>1.5-SNAPSHOT</version>
   <packaging>pom</packaging>
 
   <name>STARTS</name>
@@ -74,18 +74,23 @@
       <email>xinwei3@illinois.edu</email>
       <organization>University of Illinois at Urbana-Champaign</organization>
     </contributor>
+    <contributor>
+      <name>Tianxing Jiang</name>
+      <email>tj258@cornell.edu</email>
+      <organization>Cornell University</organization>
+    </contributor>
   </contributors>
 
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-    <jacoco.version>0.7.8</jacoco.version>
+    <jacoco.version>0.8.6</jacoco.version>
   </properties>
 
   <dependencies>
     <dependency>
       <groupId>junit</groupId>
       <artifactId>junit</artifactId>
-      <version>4.8.2</version>
+      <version>4.13.1</version>
       <scope>test</scope>
     </dependency>
     <dependency>
@@ -98,6 +103,11 @@
       <groupId>org.apache.maven.plugin-testing</groupId>
       <artifactId>maven-plugin-testing-tools</artifactId>
       <version>3.3.0</version>
+    </dependency>
+    <dependency>
+      <groupId>commons-codec</groupId>
+      <artifactId>commons-codec</artifactId>
+      <version>1.6</version>
     </dependency>
     <dependency>
       <groupId>org.jgrapht</groupId>
@@ -218,7 +228,7 @@
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-checkstyle-plugin</artifactId>
-        <version>2.17</version>
+        <version>3.0.0</version>
         <configuration>
           <configLocation>checkstyle.xml</configLocation>
           <encoding>UTF-8</encoding>
@@ -233,7 +243,7 @@
           <dependency>
             <groupId>com.puppycrawl.tools</groupId>
             <artifactId>checkstyle</artifactId>
-            <version>6.17</version>
+            <version>8.18</version>
           </dependency>
         </dependencies>
         <executions>

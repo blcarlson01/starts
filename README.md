@@ -1,13 +1,15 @@
 # STARTS (*STA*tic *R*egression *T*est *S*election) Overview
 
-[![Build Status](https://travis-ci.org/TestingResearchIllinois/starts.svg?branch=master)](https://travis-ci.org/TestingResearchIllinois/starts)
+[![Build status](https://ci.appveyor.com/api/projects/status/giplqg2f4sylogop?svg=true)](https://ci.appveyor.com/project/august782/starts)
+[![Build Status](https://github.com/TestingResearchIllinois/starts/actions/workflows/maven.yml/badge.svg)](https://github.com/TestingResearchIllinois/starts/actions)
+[![Coverage](.github/badges/jacoco.svg)](https://github.com/TestingResearchIllinois/starts/actions/workflows/coverage.yml)
 
-STARTS is a tool for static class-level regression test selection tool
+STARTS is a static class-level regression test selection tool
 for Maven-based Java programs.
 
 ## Prerequisites
 
-1. Java 1.8 and above
+1. Java 1.8
 2. Maven 3.2.5 and above
 3. Maven Surefire 2.14 and above
 4. Operating System: Linux or OSX
@@ -22,7 +24,7 @@ Change the pom.xml to add the configuration for the STARTS plugin:
     <plugin>
       <groupId>edu.illinois</groupId>
       <artifactId>starts-maven-plugin</artifactId>
-      <version>1.3</version>
+      <version>1.4</version>
     </plugin>
   </plugins>
 </build>
@@ -30,9 +32,25 @@ Change the pom.xml to add the configuration for the STARTS plugin:
 
 ## Building STARTS from source
 
+Build from source to use the latest development version, which supports Java 8-15, on Linux, OSX, or Windows.
+
 1. `git clone https://github.com/TestingResearchIllinois/starts`
 2. `cd starts`
 3. `mvn install`
+
+Then, change the pom.xml to add the configuration for the latest development version of the STARTS plugin:
+
+```xml
+<build>
+  <plugins>
+    <plugin>
+      <groupId>edu.illinois</groupId>
+      <artifactId>starts-maven-plugin</artifactId>
+      <version>1.5-SNAPSHOT</version>
+    </plugin>
+  </plugins>
+</build>
+```
 
 ## Using the STARTS Maven Plugin
 
@@ -65,3 +83,21 @@ checksums of files in the latest version, while the command in (4)
 `update**Checksums` option that can be used to change the default
 behavior. For example, to update the checksums while checking the
 diff, run `mvn starts:diff -DupdateDiffChecksums=true`.
+
+## Papers on STARTS
+
+Below is a list of research papers that describe some aspects of
+STARTS:
+
+* [STARTS: STAtic Regression Test Selection](https://www.cs.cornell.edu/~legunsen/pubs/LegunsenETAL17STARTS.pdf)
+  ```
+  Owolabi Legunsen, August Shi, Darko Marinov
+  32nd IEEE/ACM International Conference On Automated Software Engineering, Tool Demonstrations Track
+  (ASE Demo 2017), pages 949-954, Urbana-Champaign, IL, October-November 2017
+  ```
+* [An Extensive Study of Static Regression Test Selection in Modern Software Evolution](https://www.cs.cornell.edu/~legunsen/pubs/LegunsenETAL16StaticRTSStudy.pdf)
+  ```
+  Owolabi Legunsen, Farah Hariri, August Shi, Yafeng Lu, Lingming Zhang, Darko Marinov
+  24th ACM SIGSOFT International Symposium on the Foundations of Software Engineering
+  (FSE 2016), pages 583-594, Seattle, WA, November 2016
+  ```

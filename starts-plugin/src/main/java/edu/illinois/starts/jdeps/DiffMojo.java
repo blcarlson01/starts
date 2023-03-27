@@ -4,13 +4,14 @@
 
 package edu.illinois.starts.jdeps;
 
-import java.io.File;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.logging.Level;
 
+import edu.illinois.starts.constants.StartsConstants;
+import edu.illinois.starts.data.ZLCFormat;
 import edu.illinois.starts.enums.DependencyFormat;
 import edu.illinois.starts.helpers.EkstaziHelper;
 import edu.illinois.starts.helpers.RTSUtil;
@@ -32,22 +33,30 @@ import org.apache.maven.surefire.booter.Classpath;
  */
 @Mojo(name = "diff", requiresDirectInvocation = true, requiresDependencyResolution = ResolutionScope.TEST)
 @Execute(phase = LifecyclePhase.TEST_COMPILE)
-public class DiffMojo extends BaseMojo {
+public class DiffMojo extends BaseMojo implements StartsConstants {
     /**
      * Set this to "false" to disable smart hashing, i.e., to *not* strip
      * Bytecode files of debug info prior to computing checksums. See the "Smart
      * Checksums" Sections in the Ekstazi paper:
      * http://dl.acm.org/citation.cfm?id=2771784
      */
-    @Parameter(property = "cleanBytes", defaultValue = "true")
+    @Parameter(property = "cleanBytes", defaultValue = TRUE)
     protected boolean cleanBytes;
+
+    /**
+     * Format of the ZLC dependency file deps.zlc
+     * Set to "INDEXED" to store indices of tests
+     * Set to "PLAIN_TEXT" to store full URLs of tests
+     */
+    @Parameter(property = "zlcFormat", defaultValue = "PLAIN_TEXT")
+    protected ZLCFormat zlcFormat;
 
     /**
      * Set this to "true" to update test dependencies on disk. The default value of "false"
      * is useful for "dry runs" where one may want to see the diff without updating
      * the test dependencies.
      */
-    @Parameter(property = "updateDiffChecksums", defaultValue = "false")
+    @Parameter(property = "updateDiffChecksums", defaultValue = FALSE)
     private boolean updateDiffChecksums;
 
     public void execute() throws MojoExecutionException {
@@ -55,8 +64,8 @@ public class DiffMojo extends BaseMojo {
 
         Set<String> changed = new HashSet<>();
         Set<String> nonAffected = new HashSet<>();
-        Pair<Set<String>, Set<String>> data = computeChangeData();
-        String extraText = "";
+        Pair<Set<String>, Set<String>> data = computeChangeData(false);
+        String extraText = EMPTY;
         if (data != null) {
             nonAffected = data.getKey();
             changed = data.getValue();
@@ -69,7 +78,7 @@ public class DiffMojo extends BaseMojo {
         }
     }
 
-    protected Pair<Set<String>, Set<String>> computeChangeData() throws MojoExecutionException {
+    protected Pair<Set<String>, Set<String>> computeChangeData(boolean writeChanged) throws MojoExecutionException {
         long start = System.currentTimeMillis();
         Pair<Set<String>, Set<String>> data = null;
         if (depFormat == DependencyFormat.ZLC) {
@@ -79,8 +88,8 @@ public class DiffMojo extends BaseMojo {
             data = EkstaziHelper.getNonAffectedTests(getArtifactsDir());
         }
         Set<String> changed = data == null ? new HashSet<String>() : data.getValue();
-        if (Logger.getGlobal().getLoggingLevel().intValue() <= Level.FINEST.intValue()) {
-            Writer.writeToFile(changed, "changed-classes", getArtifactsDir());
+        if (writeChanged || Logger.getGlobal().getLoggingLevel().intValue() <= Level.FINEST.intValue()) {
+            Writer.writeToFile(changed, CHANGED_CLASSES, getArtifactsDir());
         }
         long end = System.currentTimeMillis();
         Logger.getGlobal().log(Level.FINE, "[PROFILE] COMPUTING CHANGES: " + Writer.millsToSeconds(end - start));
@@ -106,7 +115,7 @@ public class DiffMojo extends BaseMojo {
             Set<String> unreached = computeUnreached ? result.getUnreachedDeps() : new HashSet<String>();
             if (depFormat == DependencyFormat.ZLC) {
                 ZLCHelper zlcHelper = new ZLCHelper();
-                zlcHelper.updateZLCFile(testDeps, loader, getArtifactsDir(), unreached);
+                zlcHelper.updateZLCFile(testDeps, loader, getArtifactsDir(), unreached, useThirdParty, zlcFormat);
             } else if (depFormat == DependencyFormat.CLZ) {
                 // The next line is not needed with ZLC because '*' is explicitly tracked in ZLC
                 affectedTests = result.getAffectedTests();
@@ -119,11 +128,11 @@ public class DiffMojo extends BaseMojo {
         save(getArtifactsDir(), affectedTests, allTests, sfPathString, graph);
         printToTerminal(allTests, affectedTests);
         long end = System.currentTimeMillis();
-        Logger.getGlobal().log(Level.FINE, "[PROFILE] updateForNextRun(total): " + Writer.millsToSeconds(end - start));
+        Logger.getGlobal().log(Level.FINE, PROFILE_UPDATE_FOR_NEXT_RUN_TOTAL + Writer.millsToSeconds(end - start));
     }
 
     public void printToTerminal(List<String> testClasses, Set<String> affectedTests) {
-        Logger.getGlobal().log(Level.INFO, "STARTS:AffectedTests: " + affectedTests.size());
+        Logger.getGlobal().log(Level.INFO, STARTS_AFFECTED_TESTS + affectedTests.size());
         Logger.getGlobal().log(Level.INFO, "STARTS:TotalTests: " + testClasses.size());
     }
 
