@@ -4,6 +4,7 @@
 
 package edu.illinois.starts.helpers;
 
+import io.github.pixee.security.BoundedLineReader;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
@@ -52,7 +53,7 @@ public class YasglHelper implements StartsConstants {
         BufferedReader br = new BufferedReader(isr, 32768);
         try {
             String str;
-            while ((str = br.readLine()) != null) {
+            while ((str = BoundedLineReader.readLine(br, 5_000_000)) != null) {
                 addEdgeToGraph(builder, str);
             }
         } catch (IllegalArgumentException iae) {

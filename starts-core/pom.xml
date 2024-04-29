@@ -24,6 +24,10 @@
       <artifactId>org.ekstazi.core</artifactId>
       <version>4.6.2</version>
     </dependency>
+    <dependency>
+      <groupId>io.github.pixee</groupId>
+      <artifactId>java-security-toolkit</artifactId>
+    </dependency>
   </dependencies>
   <build>
     <plugins>
